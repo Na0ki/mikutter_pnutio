@@ -62,6 +62,7 @@ Plugin.create(:mikutter_pnutio) do
             dialog.set_text "pnut.ioの認証が成功しました！\nアカウント:@"+connect_res["token"]["user"]["username"]+"\nmikutterを再起動してください。"
             UserConfig[:pnutio_access_token]=connect_res["access_token"]
             UserConfig[:pnutio_scope]=scope
+            UserConfig[:pnutio_user_id]=connect_res["user_id"]
         end
         dialog.run
         dialog.destroy
