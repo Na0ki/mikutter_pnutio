@@ -109,6 +109,8 @@ Plugin.create(:mikutter_pnutio) do
             timezone: dict["timezone"],
             type: dict["type"],
             username: dict["username"],
+            # TODO: mikutterがidnameをfieldじゃないと表示してくれない不具合が直ったら消す
+            idname: dict["username"],
             name: dict["name"],
             profile_text: dict["content"]["text"],
             avatar_image_link: dict["content"]["avatar_image"]["link"],
@@ -135,6 +137,9 @@ Plugin.create(:mikutter_pnutio) do
     def tick_home
         now_running_home_tick=true
         res = api_get_with_auth("posts/streams/me")["data"]
+        res = res.select do |post|
+            !post["is_deleted"]
+        end
         res = res.map do |post|
             to_post post
         end
@@ -143,6 +148,9 @@ Plugin.create(:mikutter_pnutio) do
     end
     def tick_global
         res = api_get_with_auth("posts/streams/global")["data"]
+        res = res.select do |post|
+            !post["is_deleted"]
+        end
         res = res.map do |post|
             to_post post
         end

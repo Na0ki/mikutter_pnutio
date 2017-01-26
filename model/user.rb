@@ -10,6 +10,7 @@ module Plugin::MikutterPnutio
         field.string :timezone
         field.string :type
         field.string :username, required:true
+        field.string :idname, required:true
         field.string :name
         field.string :profile_text
         field.string :avatar_image_link, required:true
@@ -38,10 +39,11 @@ module Plugin::MikutterPnutio
             Retriever::URI("https://api.pnut.io/users/"+id)
         end
 
-        def idname
-            p username
-            username
-        end
+        # TODO: mikutterがidnameをfieldじゃないと表示してくれない不具合が直ったら消す
+        #def idname
+        #    p username
+        #    username
+        #end
 
         def profile_image_url
             avatar_image_link
