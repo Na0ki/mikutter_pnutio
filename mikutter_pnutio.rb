@@ -6,7 +6,6 @@ require 'json'
 require 'uri'
 
 Plugin.create(:mikutter_pnutio) do
-    defactivity "pnutio", "pnut.io"
     def api_get(endpoint)
         res = Net::HTTP.get URI.parse('https://api.pnut.io/v0/'+endpoint)
         JSON.parse(res)
@@ -66,5 +65,10 @@ Plugin.create(:mikutter_pnutio) do
         end
         dialog.run
         dialog.destroy
+    end
+    filter_extract_datasources do |ds|
+        ds[:pnutio_home] = ["pnut.io","Home"]
+        ds[:pnutio_global] = ["pnut.io","Global"]
+        [ds]
     end
 end
