@@ -1,0 +1,9 @@
+---
+slug: :mikutter_pnutio
+depends:
+  mikutter: '3.5.0'
+  plugin: []
+version: '1.0'
+author: 
+name: mikutter_pnutio
+description: pnut.ioのmikutterプラグイン。
