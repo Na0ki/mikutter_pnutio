@@ -1,14 +1,14 @@
-module Plugin::mikutter_pnutio
+module Plugin::MikutterPnutio
     class User < Retriever::Model
         include Retriever::Model::MessageMixin
 
-        register :pnutio_user, "pnut.io User"
+        register :pnutio_user, name: "pnut.io User"
 
         field.string :id
         field.time :created
         field.string :locale
         field.string :timezone
-        field.string :type, default: "human"
+        field.string :type
         field.string :username
         field.string :name
         field.string :profile_text

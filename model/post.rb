@@ -1,14 +1,16 @@
-module Plugin::mikutter_pnutio
+# -*- coding: utf-8 -*-
+
+module Plugin::MikutterPnutio
     class Post < Retriever::Model
         include Retriever::Model::MessageMixin
 
-        register :pnutio_post, "pnut.io Post", timeline: true
+        register :pnutio_post, name: "pnut.io Post", timeline: true
 
         field.time :created
         field.string :id
         field.string :text
         field.string :source
-        field.has :user, Plugin::mikutter_pnutio::User, required:true
+        field.has :user, Plugin::MikutterPnutio::User, required:true
         field.int :bookmarksCount
         field.int :repostsCount
         field.int :repliesCount

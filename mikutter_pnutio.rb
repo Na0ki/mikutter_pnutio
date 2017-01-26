@@ -4,11 +4,21 @@
 require 'net/https'
 require 'json'
 require 'uri'
+require_relative 'model'
 
 Plugin.create(:mikutter_pnutio) do
     def api_get(endpoint)
         res = Net::HTTP.get URI.parse('https://api.pnut.io/v0/'+endpoint)
         JSON.parse(res)
+    end
+    def api_get_with_auth(endpoint)
+        uri = URI.parse('https://api.pnut.io/v0/'+endpoint)
+        https = Net::HTTP.new uri.host, uri.port
+        https.use_ssl = true
+        req = Net::HTTP::Get.new uri.request_uri
+        req["Authorization"]="Bearer "+UserConfig[:pnutio_access_token]
+        res = https.request(req)
+        JSON.parse(res.body)
     end
     def api_post(endpoint, params)
         res = Net::HTTP.post_form URI.parse('https://api.pnut.io/v0/'+endpoint), params
@@ -58,17 +68,89 @@ Plugin.create(:mikutter_pnutio) do
             dialog.set_text "pnut.io APIエラー:\n"+connect_res["meta"]["error_message"]
         else
             dialog = Gtk::MessageDialog.new nil, 0, Gtk::MessageType::INFO, Gtk::MessageDialog::BUTTONS_OK, "エラー"
-            dialog.set_text "pnut.ioの認証が成功しました！\nアカウント:@"+connect_res["token"]["user"]["username"]+"\nmikutterを再起動してください。"
+            dialog.set_text "pnut.ioの認証が成功しました！\nアカウント:@"+connect_res["token"]["user"]["username"]+"\nmikutterの設定から”抽出タブ”を選択して、いい感じにやってください。"
             UserConfig[:pnutio_access_token]=connect_res["access_token"]
             UserConfig[:pnutio_scope]=scope
             UserConfig[:pnutio_user_id]=connect_res["user_id"]
+            if now_running_home_tick == false then 
+                tick_home
+            end
         end
         dialog.run
         dialog.destroy
     end
     filter_extract_datasources do |ds|
-        ds[:pnutio_home] = ["pnut.io","Home"]
+        if UserConfig[:pnutio_access_token] then
+            ds[:pnutio_home] = ["pnut.io","Home"]
+        end
         ds[:pnutio_global] = ["pnut.io","Global"]
         [ds]
+    end
+    def to_post(dict)
+        Plugin::MikutterPnutio::Post.new(
+            created: dict["created_at"],
+            id: dict["id"],
+            text: dict["text"],
+            source: dict["source"]["name"],
+            user: to_user(dict["user"]),
+            bookmarksCount: dict["counts"]["bookmarks"],
+            repostsCount: dict["counts"]["reposts"],
+            repliesCount: dict["counts"]["replies"],
+            threadsCount: dict["counts"]["threads"],
+            youBookmarked: dict["you_bookmarked"],
+            youReposted: dict["you_reposted"]
+        )
+    end
+    def to_user(dict)
+        Plugin::MikutterPnutio::User.new(
+            id: dict["id"],
+            created: dict["created_at"],
+            locale: dict["locale"],
+            timezone: dict["timezone"],
+            type: dict["type"],
+            username: dict["username"],
+            name: dict["name"],
+            profile_text: dict["content"]["text"],
+            avatar_image_link: dict["content"]["avatar_image"]["link"],
+            avatar_image_height: dict["content"]["avatar_image"]["height"],
+            avatar_image_width: dict["content"]["avatar_image"]["width"],
+            avatar_image_is_default: dict["content"]["avatar_image"]["is_default"],
+            cover_image_link: dict["content"]["cover_image"]["link"],
+            cover_image_height: dict["content"]["cover_image"]["height"],
+            cover_image_width: dict["content"]["cover_image"]["width"],
+            cover_image_is_default: dict["content"]["cover_image"]["is_default"],
+            bookmarksCount: dict["counts"]["bookmarks"],
+            clientsCount: dict["counts"]["clients"],
+            followersCount: dict["counts"]["followers"],
+            followingCount: dict["counts"]["following"],
+            postsCount: dict["counts"]["posts"],
+            usersCount: dict["counts"]["users"],
+            follows_you: dict["follows_you"],
+            you_blocked: dict["you_blocked"],
+            you_follow: dict["you_follow"],
+            you_muted: dict["you_muted"],
+            you_can_follow: dict["you_can_follow"]
+        )
+    end
+    def tick_home
+        now_running_home_tick=true
+        res = api_get_with_auth("posts/streams/me")["data"]
+        res = res.map do |post|
+            to_post post
+        end
+        Plugin.call :extract_receive_message, :pnutio_home, res
+        Reserver.new(5){ tick_home }
+    end
+    def tick_global
+        res = api_get_with_auth("posts/streams/global")["data"]
+        res = res.map do |post|
+            to_post post
+        end
+        Plugin.call :extract_receive_message, :pnutio_global, res
+        Reserver.new(5){ tick_global }
+    end
+    tick_global
+    if UserConfig[:pnutio_access_token] then
+        tick_home
     end
 end
