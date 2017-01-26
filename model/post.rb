@@ -6,9 +6,9 @@ module Plugin::MikutterPnutio
 
         register :pnutio_post, name: "pnut.io Post", timeline: true
 
-        field.time :created
-        field.string :id
-        field.string :text
+        field.time :created, required:true
+        field.string :id, required:true
+        field.string :text, required:true
         field.string :source
         field.has :user, Plugin::MikutterPnutio::User, required:true
         field.int :bookmarksCount
@@ -19,11 +19,11 @@ module Plugin::MikutterPnutio
         field.bool :youReposted
 
         def to_show
-            text
+            @to_show ||= self[:text]
         end
 
-        def uri
-            URI.parse("pnutio://users/"+id)
+        def perma_link
+            Retriever::URI("https://api.pnut.io/users/"+id)
         end
     end
 end

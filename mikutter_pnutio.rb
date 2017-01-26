@@ -90,7 +90,7 @@ Plugin.create(:mikutter_pnutio) do
         Plugin::MikutterPnutio::Post.new(
             created: dict["created_at"],
             id: dict["id"],
-            text: dict["text"],
+            text: dict["content"]["text"] || "",
             source: dict["source"]["name"],
             user: to_user(dict["user"]),
             bookmarksCount: dict["counts"]["bookmarks"],

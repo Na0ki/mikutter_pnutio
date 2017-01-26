@@ -1,18 +1,18 @@
+# -*- coding: utf-8 -*-
+
 module Plugin::MikutterPnutio
     class User < Retriever::Model
-        include Retriever::Model::MessageMixin
+        include Retriever::Model::UserMixin
 
-        register :pnutio_user, name: "pnut.io User"
-
-        field.string :id
+        field.string :id, required:true
         field.time :created
         field.string :locale
         field.string :timezone
         field.string :type
-        field.string :username
+        field.string :username, required:true
         field.string :name
         field.string :profile_text
-        field.string :avatar_image_link
+        field.string :avatar_image_link, required:true
         field.int :avatar_image_height
         field.int :avatar_image_width
         field.bool :avatar_image_is_default
@@ -34,13 +34,15 @@ module Plugin::MikutterPnutio
         field.bool :you_muted
         field.bool :you_can_follow
 
-        def uri
-            URI.parse("pnutio://users/"+id)
+        def perma_link
+            Retriever::URI("https://api.pnut.io/users/"+id)
         end
 
         def idname
+            p username
             username
         end
+
         def profile_image_url
             avatar_image_link
         end
