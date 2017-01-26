@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-module Plugin::MikutterPnutio
+module Plugin::Pnutio
     class User < Retriever::Model
         include Retriever::Model::UserMixin
 

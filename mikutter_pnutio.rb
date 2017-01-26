@@ -1,29 +1,9 @@
 # -*- coding: utf-8 -*-
 
-## い つ も の
-require 'net/https'
-require 'json'
-require 'uri'
 require_relative 'model'
+require_relative 'api'
 
 Plugin.create(:mikutter_pnutio) do
-    def api_get(endpoint)
-        res = Net::HTTP.get URI.parse('https://api.pnut.io/v0/'+endpoint)
-        JSON.parse(res)
-    end
-    def api_get_with_auth(endpoint)
-        uri = URI.parse('https://api.pnut.io/v0/'+endpoint)
-        https = Net::HTTP.new uri.host, uri.port
-        https.use_ssl = true
-        req = Net::HTTP::Get.new uri.request_uri
-        req["Authorization"]="Bearer "+UserConfig[:pnutio_access_token]
-        res = https.request(req)
-        JSON.parse(res.body)
-    end
-    def api_post(endpoint, params)
-        res = Net::HTTP.post_form URI.parse('https://api.pnut.io/v0/'+endpoint), params
-        JSON.parse(res.body)
-    end
     UserConfig[:pnutio_client_key] ||= "wxpxfSAqUfIFKlwymBw_tFddm6beVRgB"
     UserConfig[:pnutio_client_secret] ||= "KpNzVCVTLBSLGRuvfDA_7TcbsxTQLTYq"
     UserConfig[:pnutio_scope] ||= "noauth"
@@ -55,7 +35,7 @@ Plugin.create(:mikutter_pnutio) do
         end
     end
     on_pnutio_pincode_auth do
-        connect_res = api_post "oauth/access_token", {
+        connect_res = Plugin::Pnutio::API::post "oauth/access_token", {
             "client_id" => UserConfig[:pnutio_client_key],
             "client_secret" => UserConfig[:pnutio_client_secret],
             "code" => UserConfig[:pnutio_auth_code],
@@ -87,7 +67,7 @@ Plugin.create(:mikutter_pnutio) do
         [ds]
     end
     def to_post(dict)
-        Plugin::MikutterPnutio::Post.new(
+        Plugin::Pnutio::Post.new(
             created: dict["created_at"],
             id: dict["id"],
             text: dict["content"]["text"] || "",
@@ -102,7 +82,7 @@ Plugin.create(:mikutter_pnutio) do
         )
     end
     def to_user(dict)
-        Plugin::MikutterPnutio::User.new(
+        Plugin::Pnutio::User.new(
             id: dict["id"],
             created: dict["created_at"],
             locale: dict["locale"],
@@ -136,7 +116,7 @@ Plugin.create(:mikutter_pnutio) do
     end
     def tick_home
         now_running_home_tick=true
-        res = api_get_with_auth("posts/streams/me")["data"]
+        res = Plugin::Pnutio::API::get_with_auth("posts/streams/me")["data"]
         res = res.select do |post|
             !post["is_deleted"]
         end
@@ -147,7 +127,7 @@ Plugin.create(:mikutter_pnutio) do
         Reserver.new(5){ tick_home }
     end
     def tick_global
-        res = api_get_with_auth("posts/streams/global")["data"]
+        res = Plugin::Pnutio::API::get_with_auth("posts/streams/global")["data"]
         res = res.select do |post|
             !post["is_deleted"]
         end

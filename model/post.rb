@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-module Plugin::MikutterPnutio
+module Plugin::Pnutio
     class Post < Retriever::Model
         include Retriever::Model::MessageMixin
 
@@ -10,7 +10,7 @@ module Plugin::MikutterPnutio
         field.string :id, required:true
         field.string :text, required:true
         field.string :source
-        field.has :user, Plugin::MikutterPnutio::User, required:true
+        field.has :user, Plugin::Pnutio::User, required:true
         field.int :bookmarksCount
         field.int :repostsCount
         field.int :repliesCount
