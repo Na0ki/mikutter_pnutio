@@ -4,19 +4,17 @@ module Plugin::mikutter_pnutio
 
         register :pnutio_post, "pnut.io Post", timeline: true
 
+        field.time :created
         field.string :id
         field.string :text
         field.string :source
-        field.time :created
-        field.bool :isMuted
-        field.bool :isRepost
-        field.bool :isSelf
-        field.bool :isStarred
-        field.bool :isThread
-        field.int :numReplies
-        field.int :numReposts
-        field.int :numStars
         field.has :user, Plugin::mikutter_pnutio::User, required:true
+        field.int :bookmarksCount
+        field.int :repostsCount
+        field.int :repliesCount
+        field.int :threadsCount
+        field.bool :youBookmarked
+        field.bool :youReposted
 
         def to_show
             text
