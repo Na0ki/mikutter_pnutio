@@ -71,7 +71,7 @@ Plugin.create(:mikutter_pnutio) do
             created: dict["created_at"],
             id: dict["id"],
             text: dict["content"]["text"] || "",
-            source: dict["source"]["name"],
+            source: dict["source"]["name"]+"(with pnut.io)",
             user: to_user(dict["user"]),
             bookmarksCount: dict["counts"]["bookmarks"],
             repostsCount: dict["counts"]["reposts"],
