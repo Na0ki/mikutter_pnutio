@@ -36,7 +36,7 @@ module Plugin::MikutterPnutio
         field.bool :you_can_follow
 
         def perma_link
-            Retriever::URI("https://api.pnut.io/users/"+id)
+            Retriever::URI("https://pnut.io/@"+user.username)
         end
 
         # TODO: mikutterがidnameをfieldじゃないと表示してくれない不具合が直ったら消す

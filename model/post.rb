@@ -23,7 +23,7 @@ module Plugin::MikutterPnutio
         end
 
         def perma_link
-            Retriever::URI("https://api.pnut.io/users/"+id)
+            Retriever::URI("https://pnut.io/@"+user.username+"/"+id)
         end
     end
 end
