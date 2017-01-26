@@ -8,5 +8,9 @@ module Plugin::mikutter_pnutio
         field.string :name
         field.string :idname
         field.string :profile_image_url
+
+        def uri
+            URI.parse("pnutio://users/"+id)
+        end
     end
 end

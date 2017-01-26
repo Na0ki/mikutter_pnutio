@@ -4,9 +4,9 @@ module Plugin::mikutter_pnutio
 
         register :pnutio_post, "pnut.io Post", timeline: true
 
+        field.string :id
         field.string :text
         field.string :source
-        field.string :id
         field.time :created
         field.bool :isMuted
         field.bool :isRepost
@@ -20,6 +20,10 @@ module Plugin::mikutter_pnutio
 
         def to_show
             text
+        end
+
+        def uri
+            URI.parse("pnutio://users/"+id)
         end
     end
 end
