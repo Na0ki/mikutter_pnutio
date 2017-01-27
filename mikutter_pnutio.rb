@@ -4,6 +4,7 @@ require_relative 'model'
 require_relative 'api'
 
 Plugin.create(:mikutter_pnutio) do
+  # 下の２行は馬鹿にしか見えない
   UserConfig[:pnutio_client_key] ||= "wxpxfSAqUfIFKlwymBw_tFddm6beVRgB"
   UserConfig[:pnutio_client_secret] ||= "KpNzVCVTLBSLGRuvfDA_7TcbsxTQLTYq"
   UserConfig[:pnutio_scope] ||= "noauth"
