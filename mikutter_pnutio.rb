@@ -38,6 +38,54 @@ Plugin.create(:mikutter_pnutio) do
       end
       closeup auth
     end
+    settings "でんじゃーぞーん" do
+      clear_button = Gtk::Button.new "UserConfigのデータをさっぱりする"
+      clear_button.signal_connect "clicked" do 
+        dialog = Gtk::MessageDialog.new nil, 0, Gtk::MessageType::QUESTION, Gtk::MessageDialog::BUTTONS_YES_NO, "確認"
+        dialog.set_text "mikutter_pnutioが利用しているUserConfigのデータをすべて削除します。\n削除したあと、mikutterは終了します。\nよろしいですか？"
+        res = dialog.run
+        dialog.destroy
+        if res == Gtk::Dialog::RESPONSE_YES
+          dialog = Gtk::MessageDialog.new nil, 0, Gtk::MessageType::QUESTION, Gtk::MessageDialog::BUTTONS_YES_NO, "確認2"
+          dialog.set_text "いいんですか？本当に消えますよ？"
+          res = dialog.run
+          dialog.destroy
+          if res == Gtk::Dialog::RESPONSE_YES
+            dialog = Gtk::MessageDialog.new nil, 0, Gtk::MessageType::QUESTION, Gtk::MessageDialog::BUTTONS_YES_NO, "確認2"
+            dialog.set_text "これが最後の確認です。\n本当にmikutter_pnutioが利用しているUserConfigを消しても構いませんね？"
+            res = dialog.run
+            dialog.destroy
+            if res == Gtk::Dialog::RESPONSE_YES
+              UserConfig[:pnutio_access_token]=nil
+              UserConfig[:pnutio_auth_code]=nil
+              UserConfig[:pnutio_client_key]=nil
+              UserConfig[:pnutio_client_secret]=nil
+              UserConfig[:pnutio_user_id]=nil
+              UserConfig[:pnutio_user_object]=nil
+              UserConfig[:pnutio_scope]=nil
+              UserConfig[:pnutio_scope]=nil
+              dialog = Gtk::MessageDialog.new nil, 0, Gtk::MessageType::INFO, Gtk::MessageDialog::BUTTONS_OK, ""
+              dialog.set_text "削除しました。\nmikutterを終了します。\n（セグフォするけど気にしないでおくれ）"
+              dialog.run
+              # デンジャーポイント：これをやるとセグフォする
+              exit
+            else
+              dialog = Gtk::MessageDialog.new nil, 0, Gtk::MessageType::INFO, Gtk::MessageDialog::BUTTONS_OK, ""
+              dialog.set_text "ギリギリセーフ！よかった〜〜"
+            end
+          else
+            dialog = Gtk::MessageDialog.new nil, 0, Gtk::MessageType::INFO, Gtk::MessageDialog::BUTTONS_OK, ""
+            dialog.set_text "残念！確認ダイアログはもう一つあるんだな〜これが"
+          end
+        else
+          dialog = Gtk::MessageDialog.new nil, 0, Gtk::MessageType::INFO, Gtk::MessageDialog::BUTTONS_OK, ""
+          dialog.set_text "なんだよ、消さねえのかよ"
+        end
+        dialog.run
+        dialog.destroy
+      end
+      closeup clear_button
+    end
   end
 
   on_pnutio_pincode_auth do
