@@ -52,6 +52,7 @@ Plugin.create(:mikutter_pnutio) do
             UserConfig[:pnutio_access_token]=connect_res["access_token"]
             UserConfig[:pnutio_scope]=scope
             UserConfig[:pnutio_user_id]=connect_res["user_id"]
+            UserConfig[:pnutio_user_object]=Plugin::Pnutio::API::get_with_auth("users/"+UserConfig[:pnutio_user_id])["data"]
             if now_running_home_tick == false
                 tick_home
             end
@@ -95,6 +96,7 @@ Plugin.create(:mikutter_pnutio) do
     end
     tick_global
     if UserConfig[:pnutio_access_token]
+        UserConfig[:pnutio_user_object]=Plugin::Pnutio::API::get_with_auth("users/"+UserConfig[:pnutio_user_id])["data"]
         tick_home
     end
 end

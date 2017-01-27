@@ -56,11 +56,20 @@ module Plugin::Pnutio
                     res = API::delete_with_auth("posts/"+id+"/bookmark")
                 end
                 result = res["meta"]["code"] < 400
+                # エラーでももうやってあるっぽい場合はやったことにする
+                if result == false
+                    if _fav == false && res["meta"]["error_message"] == "Post not bookmarked."
+                        result = true
+                    elsif _fav == true and res["meta"]["error_message"] == "Bookmark already exists."
+                        result=true
+                    end
+                end
                 if result
+                    my_user = User.for_dict(UserConfig[:pnutio_user_object])
                     if _fav
-                        Plugin.call(:favorite, Service.primary, Service.primary.user_obj, self)
+                        Plugin.call :favorite, Service.primary, my_user, self
                     else
-                        Plugin.call(:unfavorite, Service.primary, Service.primary.user_obj, self)
+                        Plugin.call :unfavorite, Service.primary, my_user, self
                     end
                     self.youBookmarked=_fav
                 else
