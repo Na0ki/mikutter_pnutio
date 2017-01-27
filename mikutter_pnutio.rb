@@ -10,6 +10,8 @@ Plugin.create(:mikutter_pnutio) do
   redirect_uri = "urn:ietf:wg:oauth:2.0:oob"
   scope = "basic+stream+write_post+update_profile"
 
+  @now_running_home_tick = false
+
   settings "pnut.io" do
     settings "OAuth" do
       auth = Gtk::Button.new("認証画面を開く")
@@ -55,7 +57,7 @@ Plugin.create(:mikutter_pnutio) do
       UserConfig[:pnutio_scope]=scope
       UserConfig[:pnutio_user_id]=connect_res["user_id"]
       UserConfig[:pnutio_user_object]=Plugin::Pnutio::API::get_with_auth("users/"+UserConfig[:pnutio_user_id])["data"]
-      if now_running_home_tick == false
+      unless @now_running_home_tick
         tick_home
       end
     end
@@ -72,7 +74,7 @@ Plugin.create(:mikutter_pnutio) do
   end
 
   def tick_home
-    now_running_home_tick=true
+    @now_running_home_tick=true
     res = Plugin::Pnutio::API::get_with_auth("posts/streams/me")["data"]
     res = res.select do |post|
       !post["is_deleted"]
