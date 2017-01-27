@@ -23,7 +23,37 @@ module Plugin::Pnutio
             res = Net::HTTP.post_form URI.parse('https://api.pnut.io/v0/'+endpoint), params
             JSON.parse(res.body)
         end
+        def post_with_auth(endpoint,params)
+            uri = URI.parse('https://api.pnut.io/v0/'+endpoint)
+            https = Net::HTTP.new uri.host, uri.port
+            https.use_ssl = true
+            req = Net::HTTP::Post.new uri.request_uri
+            req.set_form_data(params)
+            req["Authorization"]="Bearer "+UserConfig[:pnutio_access_token]
+            res = https.request(req)
+            JSON.parse(res.body)
+        end
+        def put_with_auth(endpoint,params={})
+            uri = URI.parse('https://api.pnut.io/v0/'+endpoint)
+            https = Net::HTTP.new uri.host, uri.port
+            https.use_ssl = true
+            req = Net::HTTP::Put.new uri.request_uri
+            req.set_form_data(params)
+            req["Authorization"]="Bearer "+UserConfig[:pnutio_access_token]
+            res = https.request(req)
+            JSON.parse(res.body)
+        end
+        def delete_with_auth(endpoint,params={})
+            uri = URI.parse('https://api.pnut.io/v0/'+endpoint)
+            https = Net::HTTP.new uri.host, uri.port
+            https.use_ssl = true
+            req = Net::HTTP::Delete.new uri.request_uri
+            # req.set_form_data(params)
+            req["Authorization"]="Bearer "+UserConfig[:pnutio_access_token]
+            res = https.request(req)
+            JSON.parse(res.body)
+        end
 
-        module_function :get,:get_with_auth,:post
+        module_function :get,:get_with_auth,:post, :post_with_auth, :put_with_auth, :delete_with_auth
     end
 end
