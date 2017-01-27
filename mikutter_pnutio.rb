@@ -16,7 +16,8 @@ Plugin.create(:mikutter_pnutio) do
     settings "OAuth" do
       auth = Gtk::Button.new("認証画面を開く")
       auth.signal_connect "clicked" do
-        Gtk::openurl("https://pnut.io/oauth/authenticate?client_id="+UserConfig[:pnutio_client_key]+"&response_type=code&scope="+scope+"&redirect_uri="+redirect_uri)
+        Gtk::openurl('https://pnut.io/oauth/authenticate?client_id=%{client_key}&response_type=code&scope=%{scope}&redirect_uri=%{redirect_uri}' \
+        % {client_key: UserConfig[:pnutio_client_key], scope: scope, redirect_uri: redirect_uri})
         dialog = Gtk::Dialog.new "pnut.io コード入力"
         dialog_label = Gtk::Label.new "コードを入力してください。"
         dialog_label.show
@@ -52,7 +53,8 @@ Plugin.create(:mikutter_pnutio) do
       dialog.set_text "pnut.io APIエラー:\n"+connect_res["meta"]["error_message"]
     else
       dialog = Gtk::MessageDialog.new nil, 0, Gtk::MessageType::INFO, Gtk::MessageDialog::BUTTONS_OK, "エラー"
-      dialog.set_text "pnut.ioの認証が成功しました！\nアカウント:@"+connect_res["token"]["user"]["username"]+"\nmikutterの設定から”抽出タブ”を選択して、いい感じにやってください。"
+      dialog.set_text "pnut.ioの認証が成功しました！\nアカウント:@%{user_name}\nmikutterの設定から”抽出タブ”を選択して、いい感じにやってください。" \
+      % {username: connect_res["token"]["user"]["username"]}
       UserConfig[:pnutio_access_token]=connect_res["access_token"]
       UserConfig[:pnutio_scope]=scope
       UserConfig[:pnutio_user_id]=connect_res["user_id"]
