@@ -24,7 +24,7 @@ Plugin.create(:mikutter_pnutio) do
                 dialog.add_buttons(["OK",Gtk::Dialog::RESPONSE_OK],["Cancel",Gtk::Dialog::RESPONSE_CANCEL])
                 res_code = dialog.run
                 p res_code
-                if res_code == Gtk::Dialog::RESPONSE_OK then
+                if res_code == Gtk::Dialog::RESPONSE_OK
                     UserConfig[:pnutio_auth_code] = code_input.text
                     Plugin.call(:pnutio_pincode_auth)
                 end
@@ -43,7 +43,7 @@ Plugin.create(:mikutter_pnutio) do
             "grant_type" => "authorization_code"
         }
         p connect_res
-        if connect_res["meta"] then
+        if connect_res["meta"]
             dialog = Gtk::MessageDialog.new nil, 0, Gtk::MessageType::ERROR, Gtk::MessageDialog::BUTTONS_OK, "エラー"
             dialog.set_text "pnut.io APIエラー:\n"+connect_res["meta"]["error_message"]
         else
@@ -52,7 +52,7 @@ Plugin.create(:mikutter_pnutio) do
             UserConfig[:pnutio_access_token]=connect_res["access_token"]
             UserConfig[:pnutio_scope]=scope
             UserConfig[:pnutio_user_id]=connect_res["user_id"]
-            if now_running_home_tick == false then 
+            if now_running_home_tick == false
                 tick_home
             end
         end
@@ -60,7 +60,7 @@ Plugin.create(:mikutter_pnutio) do
         dialog.destroy
     end
     filter_extract_datasources do |ds|
-        if UserConfig[:pnutio_access_token] then
+        if UserConfig[:pnutio_access_token]
             ds[:pnutio_home] = ["pnut.io","Home"]
         end
         ds[:pnutio_global] = ["pnut.io","Global"]
@@ -138,7 +138,7 @@ Plugin.create(:mikutter_pnutio) do
         Reserver.new(5){ tick_global }
     end
     tick_global
-    if UserConfig[:pnutio_access_token] then
+    if UserConfig[:pnutio_access_token]
         tick_home
     end
 end

@@ -30,14 +30,14 @@ module Plugin::Pnutio
 
         def favorite(_fav=true)
             Deferred.new {
-                if _fav == true then
+                if _fav == true
                     res = API::put_with_auth("posts/"+id+"/bookmark")
                 else
                     res = API::delete_with_auth("posts/"+id+"/bookmark")
                 end
                 result = res["meta"]["code"] < 400
-                if result then
-                    if _fav then
+                if result
+                    if _fav
                         Plugin.call(:favorite, Service.primary, Service.primary.user_obj, self)
                     else
                         Plugin.call(:unfavorite, Service.primary, Service.primary.user_obj, self)
