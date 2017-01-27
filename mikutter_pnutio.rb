@@ -38,6 +38,22 @@ Plugin.create(:mikutter_pnutio) do
       end
       closeup auth
     end
+    settings "多分でんじゃーじゃないゾーン" do
+      update_button = Gtk::Button.new "自分の情報を更新する"
+      update_button.signal_connect "clicked" do
+        if(!UserConfig[:pnutio_access_token])
+          dialog = Gtk::MessageDialog.new nil, 0, Gtk::MessageType::INFO, Gtk::MessageDialog::BUTTONS_OK, ""
+          dialog.set_text "認証してから出直してこい"
+        else
+          UserConfig[:pnutio_user_object] = Plugin::Pnutio::API::get_with_auth("users/"+UserConfig[:pnutio_user_id])["data"]
+          dialog = Gtk::MessageDialog.new nil, 0, Gtk::MessageType::INFO, Gtk::MessageDialog::BUTTONS_OK, ""
+          dialog.set_text "これで多分更新されました〜。\n一部再起動しないと反映されないのがあるかもしれません。\nおまけ：この機能使うよりmikutter再起動したほうが確実で手軽ですよ"
+        end
+        dialog.run
+        dialog.destroy
+      end
+      closeup update_button
+    end
     settings "でんじゃーぞーん" do
       clear_button = Gtk::Button.new "UserConfigのデータをさっぱりする"
       clear_button.signal_connect "clicked" do 
