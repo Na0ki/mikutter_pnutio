@@ -48,5 +48,39 @@ module Plugin::Pnutio
         def profile_image_url
             avatar_image_link
         end
+
+        def self.for_dict(dict)
+            User.new(
+                id: dict["id"],
+                created: dict["created_at"],
+                locale: dict["locale"],
+                timezone: dict["timezone"],
+                type: dict["type"],
+                username: dict["username"],
+                # TODO: mikutterがidnameをfieldじゃないと表示してくれない不具合が直ったら消す
+                idname: dict["username"],
+                name: dict["name"],
+                profile_text: dict["content"]["text"],
+                avatar_image_link: dict["content"]["avatar_image"]["link"],
+                avatar_image_height: dict["content"]["avatar_image"]["height"],
+                avatar_image_width: dict["content"]["avatar_image"]["width"],
+                avatar_image_is_default: dict["content"]["avatar_image"]["is_default"],
+                cover_image_link: dict["content"]["cover_image"]["link"],
+                cover_image_height: dict["content"]["cover_image"]["height"],
+                cover_image_width: dict["content"]["cover_image"]["width"],
+                cover_image_is_default: dict["content"]["cover_image"]["is_default"],
+                bookmarksCount: dict["counts"]["bookmarks"],
+                clientsCount: dict["counts"]["clients"],
+                followersCount: dict["counts"]["followers"],
+                followingCount: dict["counts"]["following"],
+                postsCount: dict["counts"]["posts"],
+                usersCount: dict["counts"]["users"],
+                follows_you: dict["follows_you"],
+                you_blocked: dict["you_blocked"],
+                you_follow: dict["you_follow"],
+                you_muted: dict["you_muted"],
+                you_can_follow: dict["you_can_follow"]
+            )
+        end
     end
 end

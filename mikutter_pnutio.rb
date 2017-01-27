@@ -66,54 +66,6 @@ Plugin.create(:mikutter_pnutio) do
         ds[:pnutio_global] = ["pnut.io","Global"]
         [ds]
     end
-    def to_post(dict)
-        Plugin::Pnutio::Post.new(
-            created: dict["created_at"],
-            id: dict["id"],
-            text: dict["content"]["text"] || "",
-            source: dict["source"]["name"]+"(with pnut.io)",
-            user: to_user(dict["user"]),
-            bookmarksCount: dict["counts"]["bookmarks"],
-            repostsCount: dict["counts"]["reposts"],
-            repliesCount: dict["counts"]["replies"],
-            threadsCount: dict["counts"]["threads"],
-            youBookmarked: dict["you_bookmarked"],
-            youReposted: dict["you_reposted"]
-        )
-    end
-    def to_user(dict)
-        Plugin::Pnutio::User.new(
-            id: dict["id"],
-            created: dict["created_at"],
-            locale: dict["locale"],
-            timezone: dict["timezone"],
-            type: dict["type"],
-            username: dict["username"],
-            # TODO: mikutterがidnameをfieldじゃないと表示してくれない不具合が直ったら消す
-            idname: dict["username"],
-            name: dict["name"],
-            profile_text: dict["content"]["text"],
-            avatar_image_link: dict["content"]["avatar_image"]["link"],
-            avatar_image_height: dict["content"]["avatar_image"]["height"],
-            avatar_image_width: dict["content"]["avatar_image"]["width"],
-            avatar_image_is_default: dict["content"]["avatar_image"]["is_default"],
-            cover_image_link: dict["content"]["cover_image"]["link"],
-            cover_image_height: dict["content"]["cover_image"]["height"],
-            cover_image_width: dict["content"]["cover_image"]["width"],
-            cover_image_is_default: dict["content"]["cover_image"]["is_default"],
-            bookmarksCount: dict["counts"]["bookmarks"],
-            clientsCount: dict["counts"]["clients"],
-            followersCount: dict["counts"]["followers"],
-            followingCount: dict["counts"]["following"],
-            postsCount: dict["counts"]["posts"],
-            usersCount: dict["counts"]["users"],
-            follows_you: dict["follows_you"],
-            you_blocked: dict["you_blocked"],
-            you_follow: dict["you_follow"],
-            you_muted: dict["you_muted"],
-            you_can_follow: dict["you_can_follow"]
-        )
-    end
     def tick_home
         now_running_home_tick=true
         res = Plugin::Pnutio::API::get_with_auth("posts/streams/me")["data"]
@@ -121,7 +73,7 @@ Plugin.create(:mikutter_pnutio) do
             !post["is_deleted"]
         end
         res = res.map do |post|
-            to_post post
+            Plugin::Pnutio::Post::for_dict post
         end
         Plugin.call :extract_receive_message, :pnutio_home, res
         Reserver.new(5){ tick_home }
@@ -136,7 +88,7 @@ Plugin.create(:mikutter_pnutio) do
             !post["is_deleted"]
         end
         res = res.map do |post|
-            to_post post
+            Plugin::Pnutio::Post::for_dict post
         end
         Plugin.call :extract_receive_message, :pnutio_global, res
         Reserver.new(5){ tick_global }

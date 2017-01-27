@@ -26,6 +26,24 @@ module Plugin::Pnutio
             Retriever::URI("https://pnut.io/@"+user.username+"/"+id)
         end
 
+        # dictからpostを作る
+
+        def self.for_dict(dict)
+            Post.new(
+                created: Time.iso8601(dict["created_at"]),
+                id: dict["id"],
+                text: dict["content"]["text"] || "",
+                source: dict["source"]["name"]+"(with pnut.io)",
+                user: User.for_dict(dict["user"]),
+                bookmarksCount: dict["counts"]["bookmarks"],
+                repostsCount: dict["counts"]["reposts"],
+                repliesCount: dict["counts"]["replies"],
+                threadsCount: dict["counts"]["threads"],
+                youBookmarked: dict["you_bookmarked"],
+                youReposted: dict["you_reposted"]
+            )
+        end
+
         # ふぁぼ実装
 
         def favorite(_fav=true)
