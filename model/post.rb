@@ -29,7 +29,7 @@ module Plugin::Pnutio
         # dictからpostを作る
 
         def self.for_dict(dict)
-            Post.new(
+            post = Post.new(
                 created: Time.iso8601(dict["created_at"]),
                 id: dict["id"],
                 text: dict["content"]["text"] || "",
@@ -42,6 +42,8 @@ module Plugin::Pnutio
                 youBookmarked: dict["you_bookmarked"],
                 youReposted: dict["you_reposted"]
             )
+            post.created.localtime post.user.timezone_offset
+            post
         end
 
         # ふぁぼ実装

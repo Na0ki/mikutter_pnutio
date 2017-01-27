@@ -3,10 +3,14 @@ pnut.io向けmikutterプラグイン
 
 ## how to install
 
+bundlerが必要です。
+
 ```
 $ mkdir -p ~/.mikutter/plugin
 $ cd ~/.mikutter/plugin
 $ git clone https://github.com/Petitsurume/mikutter_pnutio
+$ cd mikutter_pnutio
+$ bundle install
 ```
 
 これが終わったらmikutterを再起動して、設定に追加された`pnut.io`から認証をしてください。

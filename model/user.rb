@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+require 'tzinfo'
+
 module Plugin::Pnutio
     class User < Retriever::Model
         include Retriever::Model::UserMixin
@@ -47,6 +49,10 @@ module Plugin::Pnutio
 
         def profile_image_url
             avatar_image_link
+        end
+
+        def timezone_offset
+            TZInfo::Timezone.get(self.timezone).current_period.utc_offset
         end
 
         def self.for_dict(dict)
