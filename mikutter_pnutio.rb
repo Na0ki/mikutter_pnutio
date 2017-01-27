@@ -127,7 +127,11 @@ Plugin.create(:mikutter_pnutio) do
         Reserver.new(5){ tick_home }
     end
     def tick_global
-        res = Plugin::Pnutio::API::get_with_auth("posts/streams/global")["data"]
+        if UserConfig[:pnutio_access_token]
+            res = Plugin::Pnutio::API::get_with_auth("posts/streams/global")["data"]
+        else
+            res = Plugin::Pnutio::API::get("posts/streams/global")["data"]
+        end
         res = res.select do |post|
             !post["is_deleted"]
         end
