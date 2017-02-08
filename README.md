@@ -1,5 +1,6 @@
 # mikutter_pnutio
 pnut.io向けmikutterプラグイン
+[english](https://github.com/Petitsurume/mikutter_pnutio/blob/master/README_en.md)
 
 ## how to install
 
