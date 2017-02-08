@@ -18,16 +18,16 @@ please mikutter restart.
 
 if you using linux distro, please first try install from package manager.
 
-## install from package manager
+### install from package manager
 
-### debian/ubuntu (apt)
+#### debian/ubuntu (apt)
 
 ```
 sudo apt-get update
 sudo apt-get install mikutter
 ```
 
-### ArchLinux (with yaourt)
+#### ArchLinux (with yaourt)
 
 ```
 yaourt -S mikutter
@@ -36,7 +36,7 @@ yaourt -S mikutter
 **NOTE: this plugin required mikutter version is >= 3.5.0. please check mikutter version(try run `mikutter -v`).
 if installed mikutter version < 3.5.0, please manual install.**
 
-## manual install
+### manual install
 
 requirements: `ruby` (version >= 2.3), `bundle` command, `git`
 
