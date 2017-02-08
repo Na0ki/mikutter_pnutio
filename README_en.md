@@ -15,12 +15,14 @@ mikutter plugin for pnut.io
 
 ## how to install this plugin
 
-requirements: `git` command
+requirements: `git` command, `bundle` command
 
 ```
-$ mkdir -p ~/.mikutter/plugin
-$ cd ~/.mikutter/plugin
-$ git clone https://github.com/Petitsurume/mikutter_pnutio
+mkdir -p ~/.mikutter/plugin
+cd ~/.mikutter/plugin
+git clone https://github.com/Petitsurume/mikutter_pnutio
+cd mikutter_pnutio
+bundle install
 ```
 
 please mikutter restart.
