@@ -2,6 +2,17 @@
 
 mikutter plugin for pnut.io
 
+## features
+
+- home timeline
+- public timeline
+- bookmark post
+
+### TODO
+
+- repost
+- create new post
+
 ## how to install this plugin
 
 requirements: `git` command
