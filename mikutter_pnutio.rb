@@ -17,7 +17,7 @@ Plugin.create(:mikutter_pnutio) do
     settings "OAuth" do
       auth = Gtk::Button.new("認証画面を開く")
       auth.signal_connect "clicked" do
-        Gtk::openurl('https://pnut.io/oauth/authenticate?client_id=%{client_key}&response_type=code&scope=%{scope}&redirect_uri=%{redirect_uri}' \
+        Gtk.openurl('https://pnut.io/oauth/authenticate?client_id=%{client_key}&response_type=code&scope=%{scope}&redirect_uri=%{redirect_uri}' \
         % {client_key: UserConfig[:pnutio_client_key], scope: scope, redirect_uri: redirect_uri})
         dialog = Gtk::Dialog.new "pnut.io コード入力"
         dialog_label = Gtk::Label.new "コードを入力してください。"
@@ -45,7 +45,7 @@ Plugin.create(:mikutter_pnutio) do
           dialog = Gtk::MessageDialog.new nil, 0, Gtk::MessageType::INFO, Gtk::MessageDialog::BUTTONS_OK, ""
           dialog.set_text "認証してから出直してこい"
         else
-          UserConfig[:pnutio_user_object] = Plugin::Pnutio::API::get_with_auth("users/"+UserConfig[:pnutio_user_id])["data"]
+          UserConfig[:pnutio_user_object] = Plugin::Pnutio::API.get_with_auth("users/"+UserConfig[:pnutio_user_id])["data"]
           dialog = Gtk::MessageDialog.new nil, 0, Gtk::MessageType::INFO, Gtk::MessageDialog::BUTTONS_OK, ""
           dialog.set_text "これで多分更新されました〜。\n一部再起動しないと反映されないのがあるかもしれません。\nおまけ：この機能使うよりmikutter再起動したほうが確実で手軽ですよ"
         end
@@ -105,7 +105,7 @@ Plugin.create(:mikutter_pnutio) do
   end
 
   on_pnutio_pincode_auth do
-    connect_res = Plugin::Pnutio::API::post "oauth/access_token", {
+    connect_res = Plugin::Pnutio::API.post "oauth/access_token", {
         "client_id" => UserConfig[:pnutio_client_key],
         "client_secret" => UserConfig[:pnutio_client_secret],
         "code" => UserConfig[:pnutio_auth_code],
@@ -123,7 +123,7 @@ Plugin.create(:mikutter_pnutio) do
       UserConfig[:pnutio_access_token]=connect_res["access_token"]
       UserConfig[:pnutio_scope]=scope
       UserConfig[:pnutio_user_id]=connect_res["user_id"]
-      UserConfig[:pnutio_user_object]=Plugin::Pnutio::API::get_with_auth("users/"+UserConfig[:pnutio_user_id])["data"]
+      UserConfig[:pnutio_user_object]=Plugin::Pnutio::API.get_with_auth("users/"+UserConfig[:pnutio_user_id])["data"]
       unless @now_running_home_tick
         tick_home
       end
@@ -143,7 +143,7 @@ Plugin.create(:mikutter_pnutio) do
   def tick_home
     Thread.new {
       @now_running_home_tick=true
-      res = Plugin::Pnutio::API::get_with_auth("posts/streams/me")["data"]
+      res = Plugin::Pnutio::API.get_with_auth("posts/streams/me")["data"]
       res = res.select do |post|
         !post["is_deleted"]
       end
@@ -158,15 +158,15 @@ Plugin.create(:mikutter_pnutio) do
   def tick_global
     Thread.new {
       if UserConfig[:pnutio_access_token]
-        res = Plugin::Pnutio::API::get_with_auth("posts/streams/global")["data"]
+        res = Plugin::Pnutio::API.get_with_auth("posts/streams/global")["data"]
       else
-        res = Plugin::Pnutio::API::get("posts/streams/global")["data"]
+        res = Plugin::Pnutio::API.get("posts/streams/global")["data"]
       end
       res = res.select do |post|
         !post["is_deleted"]
       end
       res = res.map do |post|
-        Plugin::Pnutio::Post::for_dict post
+        Plugin::Pnutio::Post.for_dict post
       end
       Plugin.call :extract_receive_message, :pnutio_global, res
       Reserver.new(5) { tick_global }
@@ -175,7 +175,7 @@ Plugin.create(:mikutter_pnutio) do
 
   tick_global.trap { |err| error err }
   if UserConfig[:pnutio_access_token]
-    UserConfig[:pnutio_user_object]=Plugin::Pnutio::API::get_with_auth("users/"+UserConfig[:pnutio_user_id])["data"]
+    UserConfig[:pnutio_user_object]=Plugin::Pnutio::API.get_with_auth("users/"+UserConfig[:pnutio_user_id])["data"]
     tick_home.trap { |err| error err }
   end
 end
