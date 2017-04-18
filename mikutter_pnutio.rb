@@ -141,37 +141,41 @@ Plugin.create(:mikutter_pnutio) do
   end
 
   def tick_home
-    @now_running_home_tick=true
-    res = Plugin::Pnutio::API::get_with_auth("posts/streams/me")["data"]
-    res = res.select do |post|
-      !post["is_deleted"]
-    end
-    res = res.map do |post|
-      Plugin::Pnutio::Post::for_dict post
-    end
-    Plugin.call :extract_receive_message, :pnutio_home, res
-    Reserver.new(5) { tick_home }
+    Thread.new {
+      @now_running_home_tick=true
+      res = Plugin::Pnutio::API::get_with_auth("posts/streams/me")["data"]
+      res = res.select do |post|
+        !post["is_deleted"]
+      end
+      res = res.map do |post|
+        Plugin::Pnutio::Post::for_dict post
+      end
+      Plugin.call :extract_receive_message, :pnutio_home, res
+      Reserver.new(5) { tick_home }
+    }
   end
 
   def tick_global
-    if UserConfig[:pnutio_access_token]
-      res = Plugin::Pnutio::API::get_with_auth("posts/streams/global")["data"]
-    else
-      res = Plugin::Pnutio::API::get("posts/streams/global")["data"]
-    end
-    res = res.select do |post|
-      !post["is_deleted"]
-    end
-    res = res.map do |post|
-      Plugin::Pnutio::Post::for_dict post
-    end
-    Plugin.call :extract_receive_message, :pnutio_global, res
-    Reserver.new(5) { tick_global }
+    Thread.new {
+      if UserConfig[:pnutio_access_token]
+        res = Plugin::Pnutio::API::get_with_auth("posts/streams/global")["data"]
+      else
+        res = Plugin::Pnutio::API::get("posts/streams/global")["data"]
+      end
+      res = res.select do |post|
+        !post["is_deleted"]
+      end
+      res = res.map do |post|
+        Plugin::Pnutio::Post::for_dict post
+      end
+      Plugin.call :extract_receive_message, :pnutio_global, res
+      Reserver.new(5) { tick_global }
+    }
   end
 
-  tick_global
+  tick_global.trap { |err| error err }
   if UserConfig[:pnutio_access_token]
     UserConfig[:pnutio_user_object]=Plugin::Pnutio::API::get_with_auth("users/"+UserConfig[:pnutio_user_id])["data"]
-    tick_home
+    tick_home.trap { |err| error err }
   end
 end
