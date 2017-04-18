@@ -6,16 +6,16 @@ module Plugin::Pnutio
   class User < Retriever::Model
     include Retriever::Model::UserMixin
 
-    field.string :id, required:true
+    field.string :id, required: true
     field.time :created
     field.string :locale
     field.string :timezone
     field.string :type
-    field.string :username, required:true
-    field.string :idname, required:true
+    field.string :username, required: true
+    field.string :idname, required: true
     field.string :name
     field.string :profile_text
-    field.string :avatar_image_link, required:true
+    field.string :avatar_image_link, required: true
     field.int :avatar_image_height
     field.int :avatar_image_width
     field.bool :avatar_image_is_default
@@ -38,7 +38,7 @@ module Plugin::Pnutio
     field.bool :you_can_follow
 
     def perma_link
-      Retriever::URI("https://pnut.io/@"+user.username)
+      Retriever::URI("https://pnut.io/@#{user.username}")
     end
 
     # TODO: mikutterがidnameをfieldじゃないと表示してくれない不具合が直ったら消す
@@ -52,7 +52,7 @@ module Plugin::Pnutio
     end
 
     def timezone_offset
-      TZInfo::Timezone.get(self.timezone).current_period.utc_offset
+      TZInfo::Timezone.get(timezone).current_period.utc_offset
     end
 
     def self.for_dict(dict)

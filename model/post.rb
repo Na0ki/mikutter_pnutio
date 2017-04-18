@@ -6,11 +6,11 @@ module Plugin::Pnutio
 
     register :pnutio_post, name: "pnut.io Post", timeline: true
 
-    field.time :created, required:true
-    field.string :id, required:true
-    field.string :text, required:true
+    field.time :created, required: true
+    field.string :id, required: true
+    field.string :text, required: true
     field.string :source
-    field.has :user, Plugin::Pnutio::User, required:true
+    field.has :user, Plugin::Pnutio::User, required: true
     field.int :bookmarksCount
     field.int :repostsCount
     field.int :repliesCount
@@ -23,7 +23,7 @@ module Plugin::Pnutio
     end
 
     def perma_link
-      Retriever::URI("https://pnut.io/@"+user.username+"/"+id)
+      Retriever::URI("https://pnut.io/@#{user.username}/#{id}")
     end
 
     # dictからpostを作る
@@ -48,40 +48,37 @@ module Plugin::Pnutio
 
     # ふぁぼ実装
 
-    def favorite(_fav=true)
-      Deferred.new {
-        if _fav == true
-          res = API::put_with_auth("posts/"+id+"/bookmark")
+    def favorite(fav = true)
+      Deferred.new do
+        if fav
+          Plugin::Pnutio::API.put_with_auth("posts/#{id}/bookmark").next { |res|
+            handle_favourite(res)
+          }
         else
-          res = API::delete_with_auth("posts/"+id+"/bookmark")
+          Plugin::Pnutio::API.delete_with_auth("posts/#{id}/bookmark").next { |res|
+            handle_favourite(res)
+          }
         end
-        result = res["meta"]["code"] < 400
-        # エラーでももうやってあるっぽい場合はやったことにする
-        if result == false
-          if _fav == false && res["meta"]["error_message"] == "Post not bookmarked."
-            result = true
-          elsif _fav == true and res["meta"]["error_message"] == "Bookmark already exists."
-            result=true
-          end
-        end
-        if result
-          my_user = User.for_dict(UserConfig[:pnutio_user_object])
-          if _fav
-            Plugin.call :favorite, Service.primary, my_user, self
-          else
-            Plugin.call :unfavorite, Service.primary, my_user, self
-          end
-          self.youBookmarked=_fav
-        else
-          p res["meta"]
-          Deferred.fail(res["meta"]["error_message"])
-        end
-        result
-      }
+      end
+    end
+
+    private def handle_favourite(res)
+      result = res['meta']['code'] < 400
+      err_msg = res['meta']['error_message']
+      # エラーでももうやってあるっぽい場合はやったことにする
+      result = true if !result && ((!fav && err_msg == 'Post not bookmarked.') || (fav && err_msg == 'Bookmark already exists.'))
+
+      Deferred.fail(err_msg) unless result
+
+      my_user = User.for_dict(UserConfig[:pnutio_user_object])
+      status = fav ? :favorite : :unfavorite
+      Plugin.call(status, Service.primary, my_user, self)
+      self.youBookmarked = fav
+      result
     end
 
     def unfavorite
-      favorite(_fav:false)
+      favorite(_fav: false)
     end
 
     def favorite?
@@ -99,8 +96,8 @@ module Plugin::Pnutio
     def favorited_by_me?(me)
       favorite?
     end
-    
-    def introducer(me=Service.primary!)
+
+    def introducer(me = Service.primary!)
       self
     end
   end

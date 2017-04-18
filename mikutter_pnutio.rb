@@ -18,7 +18,7 @@ Plugin.create(:mikutter_pnutio) do
       auth = Gtk::Button.new("認証画面を開く")
       auth.signal_connect "clicked" do
         Gtk.openurl('https://pnut.io/oauth/authenticate?client_id=%{client_key}&response_type=code&scope=%{scope}&redirect_uri=%{redirect_uri}' \
-        % {client_key: UserConfig[:pnutio_client_key], scope: scope, redirect_uri: redirect_uri})
+        % { client_key: UserConfig[:pnutio_client_key], scope: scope, redirect_uri: redirect_uri })
         dialog = Gtk::Dialog.new "pnut.io コード入力"
         dialog_label = Gtk::Label.new "コードを入力してください。"
         dialog_label.show
@@ -41,7 +41,7 @@ Plugin.create(:mikutter_pnutio) do
     settings "多分でんじゃーじゃないゾーン" do
       update_button = Gtk::Button.new "自分の情報を更新する"
       update_button.signal_connect "clicked" do
-        if(!UserConfig[:pnutio_access_token])
+        if !UserConfig[:pnutio_access_token]
           dialog = Gtk::MessageDialog.new nil, 0, Gtk::MessageType::INFO, Gtk::MessageDialog::BUTTONS_OK, ""
           dialog.set_text "認証してから出直してこい"
         else
@@ -56,7 +56,7 @@ Plugin.create(:mikutter_pnutio) do
     end
     settings "でんじゃーぞーん" do
       clear_button = Gtk::Button.new "UserConfigのデータをさっぱりする"
-      clear_button.signal_connect "clicked" do 
+      clear_button.signal_connect "clicked" do
         dialog = Gtk::MessageDialog.new nil, 0, Gtk::MessageType::QUESTION, Gtk::MessageDialog::BUTTONS_YES_NO, "確認"
         dialog.set_text "mikutter_pnutioが利用しているUserConfigのデータをすべて削除します。\n削除したあと、mikutterは終了します。\nよろしいですか？"
         res = dialog.run
@@ -72,14 +72,14 @@ Plugin.create(:mikutter_pnutio) do
             res = dialog.run
             dialog.destroy
             if res == Gtk::Dialog::RESPONSE_YES
-              UserConfig[:pnutio_access_token]=nil
-              UserConfig[:pnutio_auth_code]=nil
-              UserConfig[:pnutio_client_key]=nil
-              UserConfig[:pnutio_client_secret]=nil
-              UserConfig[:pnutio_user_id]=nil
-              UserConfig[:pnutio_user_object]=nil
-              UserConfig[:pnutio_scope]=nil
-              UserConfig[:pnutio_scope]=nil
+              UserConfig[:pnutio_access_token] = nil
+              UserConfig[:pnutio_auth_code] = nil
+              UserConfig[:pnutio_client_key] = nil
+              UserConfig[:pnutio_client_secret] = nil
+              UserConfig[:pnutio_user_id] = nil
+              UserConfig[:pnutio_user_object] = nil
+              UserConfig[:pnutio_scope] = nil
+              UserConfig[:pnutio_scope] = nil
               dialog = Gtk::MessageDialog.new nil, 0, Gtk::MessageType::INFO, Gtk::MessageDialog::BUTTONS_OK, ""
               dialog.set_text "削除しました。\nmikutterを終了します。\n（セグフォするけど気にしないでおくれ）"
               dialog.run
@@ -105,77 +105,82 @@ Plugin.create(:mikutter_pnutio) do
   end
 
   on_pnutio_pincode_auth do
-    connect_res = Plugin::Pnutio::API.post "oauth/access_token", {
+    Plugin::Pnutio::API.post("oauth/access_token", {
         "client_id" => UserConfig[:pnutio_client_key],
         "client_secret" => UserConfig[:pnutio_client_secret],
         "code" => UserConfig[:pnutio_auth_code],
         "redirect_uri" => redirect_uri,
         "grant_type" => "authorization_code"
-    }
-    p connect_res
-    if connect_res["meta"]
-      dialog = Gtk::MessageDialog.new nil, 0, Gtk::MessageType::ERROR, Gtk::MessageDialog::BUTTONS_OK, "エラー"
-      dialog.set_text "pnut.io APIエラー:\n"+connect_res["meta"]["error_message"]
-    else
-      dialog = Gtk::MessageDialog.new nil, 0, Gtk::MessageType::INFO, Gtk::MessageDialog::BUTTONS_OK, "エラー"
-      dialog.set_text "pnut.ioの認証が成功しました！\nアカウント:@%{user_name}\nmikutterの設定から”抽出タブ”を選択して、いい感じにやってください。" \
-      % {user_name: connect_res["token"]["user"]["username"]}
-      UserConfig[:pnutio_access_token]=connect_res["access_token"]
-      UserConfig[:pnutio_scope]=scope
-      UserConfig[:pnutio_user_id]=connect_res["user_id"]
-      UserConfig[:pnutio_user_object]=Plugin::Pnutio::API.get_with_auth("users/"+UserConfig[:pnutio_user_id])["data"]
-      unless @now_running_home_tick
-        tick_home
+    }).next { |connect_res|
+      notice connect_res
+      if connect_res['meta']
+        Delayer.new do
+          dialog = Gtk::MessageDialog.new nil, 0, Gtk::MessageType::ERROR, Gtk::MessageDialog::BUTTONS_OK, "エラー"
+          dialog.set_text "pnut.io APIエラー:\n#{connect_res['meta']['error_message']}"
+          dialog.run
+          dialog.destroy
+        end
+      else
+        Delayer.new do
+          dialog = Gtk::MessageDialog.new nil, 0, Gtk::MessageType::INFO, Gtk::MessageDialog::BUTTONS_OK, "エラー"
+          dialog.set_text "pnut.ioの認証が成功しました！\nアカウント:@%{user_name}\nmikutterの設定から”抽出タブ”を選択して、いい感じにやってください。" \
+      % { user_name: connect_res['token']['user']['username'] }
+          UserConfig[:pnutio_access_token] = connect_res['access_token']
+          UserConfig[:pnutio_scope] = scope
+          UserConfig[:pnutio_user_id] = connect_res['user_id']
+          UserConfig[:pnutio_user_object] = Plugin::Pnutio::API.get_with_auth("users/#{UserConfig[:pnutio_user_id]}")['data']
+          tick_home unless @now_running_home_tick
+          dialog.run
+          dialog.destroy
+        end
       end
-    end
-    dialog.run
-    dialog.destroy
+    }.trap { |err| error err }
   end
 
   filter_extract_datasources do |ds|
-    if UserConfig[:pnutio_access_token]
-      ds[:pnutio_home] = ["pnut.io", "Home"]
-    end
-    ds[:pnutio_global] = ["pnut.io", "Global"]
+    ds[:pnutio_home] = 'pnut.io Home' if UserConfig[:pnutio_access_token]
+    ds[:pnutio_global] = 'pnut.io Global'
     [ds]
   end
 
-  def tick_home
-    Thread.new {
-      @now_running_home_tick=true
-      res = Plugin::Pnutio::API.get_with_auth("posts/streams/me")["data"]
-      res = res.select do |post|
-        !post["is_deleted"]
-      end
-      res = res.map do |post|
-        Plugin::Pnutio::Post::for_dict post
-      end
-      Plugin.call :extract_receive_message, :pnutio_home, res
-      Reserver.new(5) { tick_home }
+  def format_message(data)
+    data.reject { |post|
+      post['is_deleted']
+    }.map { |post|
+      Plugin::Pnutio::Post.for_dict(post)
     }
+  end
+
+  def tick_home
+    @now_running_home_tick = true
+    Plugin::Pnutio::API.get_with_auth('posts/streams/me').next { |res|
+      message = format_message(res['data'])
+      Plugin.call(:extract_receive_message, :pnutio_home, message)
+      Reserver.new(5) { tick_home }
+    }.trap { |err| error err }
   end
 
   def tick_global
-    Thread.new {
-      if UserConfig[:pnutio_access_token]
-        res = Plugin::Pnutio::API.get_with_auth("posts/streams/global")["data"]
-      else
-        res = Plugin::Pnutio::API.get("posts/streams/global")["data"]
-      end
-      res = res.select do |post|
-        !post["is_deleted"]
-      end
-      res = res.map do |post|
-        Plugin::Pnutio::Post.for_dict post
-      end
-      Plugin.call :extract_receive_message, :pnutio_global, res
-      Reserver.new(5) { tick_global }
-    }
+    if UserConfig[:pnutio_access_token]
+      Plugin::Pnutio::API.get_with_auth('posts/streams/global').next { |res|
+        message = format_message(res['data'])
+        Plugin.call(:extract_receive_message, :pnutio_global, message)
+        Reserver.new(5) { tick_global }
+      }.trap { |err| error err }
+    else
+      Plugin::Pnutio::API.get('posts/streams/global')['data'].next { |res|
+        message = format_message(res['data'])
+        Plugin.call(:extract_receive_message, :pnutio_global, message)
+        Reserver.new(5) { tick_global }
+      }.trap { |err| error err }
+    end
   end
 
-  tick_global.trap { |err| error err }
+  tick_global
   if UserConfig[:pnutio_access_token]
-    UserConfig[:pnutio_user_object]=Plugin::Pnutio::API.get_with_auth("users/"+UserConfig[:pnutio_user_id])["data"]
-    tick_home.trap { |err| error err }
+    Plugin::Pnutio::API.get_with_auth("users/#{UserConfig[:pnutio_user_id]}").next { |res|
+      UserConfig[:pnutio_user_object] = res['data']
+      tick_home
+    }.trap { |err| error err }
   end
 end
